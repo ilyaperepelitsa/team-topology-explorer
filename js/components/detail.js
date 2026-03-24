@@ -18,16 +18,22 @@ export function renderRolesBar(team, selectedRoleId) {
   const legendsEl = document.getElementById('rolesbar-legends');
   bar.style.display = 'flex';
 
-  // Roles as compact chips
+  // Full role cards with all info
   let rolesHtml = '';
   team.roles.forEach(r => {
     const rc = classifyRole(r);
     const nc = ROLE_COLORS[rc] || cat.color;
     const isActive = selectedRoleId === r.id;
-    rolesHtml += `<button class="rb-role ${isActive ? 'active' : ''}" onclick="window.__selectRole('${r.id}')" style="--rc:${nc}" title="${r.desc}">
-      <span class="rb-dot" style="background:${nc};${r.leader ? 'border-radius:2px' : ''}"></span>
-      <span class="rb-label">${r.label}</span>
-      ${r.leader ? '<span class="rb-leader">L</span>' : ''}
+    rolesHtml += `<button class="rb-card ${isActive ? 'active' : ''} ${r.leader ? 'is-leader' : ''}" onclick="window.__selectRole('${r.id}')" style="--rc:${nc}">
+      <div class="rb-card-top">
+        <span class="rb-card-dot" style="background:${nc};${r.leader ? 'border-radius:3px' : ''}"></span>
+        <span class="rb-card-name">${r.label}</span>
+        ${r.leader ? '<span class="rb-card-leader">Leader</span>' : ''}
+      </div>
+      <div class="rb-card-desc">${r.desc}</div>
+      <div class="rb-card-meta">
+        <span class="rb-card-type" style="color:${nc}">${rc}</span>
+      </div>
     </button>`;
   });
   rolesEl.innerHTML = rolesHtml;
