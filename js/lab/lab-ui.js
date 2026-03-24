@@ -277,13 +277,48 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
   const defaults = getDefaultsFn ? getDefaultsFn() : {};
 
   const sliders = [
-    { key: 'decisionSpeed',     label: 'Decision Speed',        desc: 'How fast must decisions be made?', tooltip: '1 = deliberate/consensus, 5 = instant. High values favor low avg path length and high density (star/mesh topologies).' },
-    { key: 'riskTolerance',     label: 'Risk Tolerance',        desc: 'Willingness to accept failure', tooltip: '1 = zero failure acceptable, 5 = move fast and break things. Low values favor high resilience scores and redundancy.' },
-    { key: 'autonomyDesired',   label: 'Autonomy Desired',      desc: 'Team self-governance level', tooltip: '1 = strict hierarchy, 5 = fully self-organizing. High values favor high autonomy index (more peer than command links).' },
-    { key: 'commOverheadOK',    label: 'Comm Overhead OK',      desc: 'Tolerance for coordination cost', tooltip: '1 = minimal meetings/syncs, 5 = heavy coordination OK. Low values favor sparse graphs; high values allow dense mesh.' },
-    { key: 'hierarchyTolerance',label: 'Hierarchy Tolerance',   desc: 'Comfort with chain of command', tooltip: '1 = flat only, 5 = deep hierarchy OK. High values favor high command-edge ratio (tree/star topologies).' },
-    { key: 'resilienceNeeded',  label: 'Resilience Needed',     desc: 'How critical is fault tolerance?', tooltip: '1 = single points of failure OK, 5 = must survive any loss. High values favor low bottleneck count and bridge count.' },
-    { key: 'innovationFocus',   label: 'Innovation Focus',      desc: 'Priority on novel solutions', tooltip: '1 = execution focus, 5 = maximum creativity. High values favor high clustering (subgroups form), low hierarchy, high autonomy.' },
+    { key: 'decisionSpeed', label: 'Decision Speed',
+      low: 'Deliberate', high: 'Instant',
+      body: 'How quickly must the team make and execute decisions? Low = committee-style consensus with review cycles (e.g., UN Security Council). High = split-second calls by one person (e.g., Fire Team leader).',
+      affects: 'Favors low avg path length, high density, star/mesh topologies.',
+      examples: '1: Legal review boards, academic committees | 5: SEAL platoons, pit crews, startup founders',
+    },
+    { key: 'riskTolerance', label: 'Risk Tolerance',
+      low: 'Zero failure', high: 'Move fast',
+      body: 'How much structural fragility is acceptable? Low = mission-critical, any single failure cascades (e.g., nuclear operations). High = fail-fast culture where individual failures are contained (e.g., startup experiments).',
+      affects: 'Low values favor high resilience scores, redundancy, paired specialties, few bridge edges.',
+      examples: '1: Aviation, surgery, infrastructure | 5: Hackathons, R&D labs, venture portfolios',
+    },
+    { key: 'autonomyDesired', label: 'Autonomy Desired',
+      low: 'Directed', high: 'Self-governing',
+      body: 'How much freedom should team members have to make independent decisions? Low = clear chain of command, orders flow top-down (e.g., Roman Legion). High = every member decides their own work (e.g., Valve flat structure).',
+      affects: 'High values favor high autonomy index (more peer/lateral links than command links).',
+      examples: '1: Military units, assembly lines | 5: Open source BDFL, Valve, artist collectives',
+    },
+    { key: 'commOverheadOK', label: 'Communication Overhead',
+      low: 'Minimal', high: 'Heavy OK',
+      body: 'How much coordination cost is acceptable? Low = people should work independently with minimal syncs (e.g., star cell network). High = constant communication is expected and productive (e.g., basketball team calling every play).',
+      affects: 'Low values favor sparse graphs with few edges; high values allow dense mesh topologies.',
+      examples: '1: Remote async teams, compartmented cells | 5: War rooms, pair programming, pit crews',
+    },
+    { key: 'hierarchyTolerance', label: 'Hierarchy Tolerance',
+      low: 'Flat only', high: 'Deep layers OK',
+      body: 'How many layers of management are acceptable? Low = everyone is a peer, no bosses (e.g., pirate crew democracy). High = multiple management layers with clear rank (e.g., traditional corporate, Roman Legion).',
+      affects: 'High values favor high command-edge ratio, tree and layered star topologies.',
+      examples: '1: Holacracy, co-ops, YC teams | 5: Fortune 500 hierarchy, military command chains',
+    },
+    { key: 'resilienceNeeded', label: 'Resilience Needed',
+      low: 'Fragile OK', high: 'Must survive any loss',
+      body: 'What happens if a key person is removed? Low = single points of failure are acceptable because the mission is short or replacements are available. High = the team must continue operating even after losing any individual member.',
+      affects: 'High values favor low bottleneck count, low bridge count, cross-training, mesh connectivity.',
+      examples: '1: Solo founder, BDFL projects | 5: SEAL platoons (cross-trained), SAS patrols (complete graph)',
+    },
+    { key: 'innovationFocus', label: 'Innovation Focus',
+      low: 'Execution', high: 'Maximum creativity',
+      body: 'Is the primary goal to execute a known playbook or to discover novel solutions? Low = optimize efficiency of known processes (e.g., F1 pit crew). High = explore unknown solution spaces (e.g., Skunk Works, Tiger Team).',
+      affects: 'High values favor high clustering (subgroups form naturally), low hierarchy, high autonomy.',
+      examples: '1: Manufacturing, logistics, pit stops | 5: Skunk Works, R&D labs, design sprints',
+    },
   ];
 
   const outcomes = [
@@ -313,40 +348,43 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
       >
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;margin-bottom:20px;">`;
+    <div style="display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:20px;">`;
 
   sliders.forEach(s => {
     const defaultVal = (defaults[s.key] != null) ? defaults[s.key] : 3;
-    const tipId = `tip-${s.key}`;
     html += `
-      <div style="position:relative;">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
-          <label style="font-size:11px;color:${C.slate400};font-weight:600;">
-            ${s.label}
-            <span class="slider-info-btn" data-tip="${tipId}" style="
-              display:inline-flex;align-items:center;justify-content:center;
-              width:15px;height:15px;border-radius:50%;
-              font-size:9px;color:${C.complement};cursor:pointer;
-              border:1px solid rgba(128,203,196,0.3);
-              background:rgba(128,203,196,0.08);
-              margin-left:4px;vertical-align:middle;
-              transition:all ${C.transition};
-            ">?</span>
-          </label>
-          <span id="rec-val-${s.key}" style="font:12px ${FONT_MONO};color:${C.accent};font-weight:700;">${defaultVal}</span>
+      <div style="
+        padding:14px 16px;border-radius:10px;
+        background:rgba(11,18,32,0.4);
+        border:1px solid rgba(51,65,85,0.35);
+      ">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;color:${C.slate200};">${s.label}</div>
+          <span id="rec-val-${s.key}" style="
+            font:16px ${FONT_MONO};font-weight:800;color:${C.accent};
+            min-width:24px;text-align:center;
+          ">${defaultVal}</span>
         </div>
-        <input id="rec-${s.key}" type="range" min="1" max="5" value="${defaultVal}"
-          style="${sliderTrackStyle}"
-          oninput="document.getElementById('rec-val-${s.key}').textContent=this.value"
-        >
-        <div style="font-size:9px;color:${C.slate500};margin-top:2px;">${s.desc}</div>
-        <div id="${tipId}" class="slider-tooltip" style="
-          display:none;position:absolute;top:100%;left:0;right:0;z-index:20;
-          margin-top:6px;padding:10px 12px;border-radius:8px;
-          background:rgba(11,18,32,0.95);border:1px solid rgba(128,203,196,0.25);
-          font-size:11px;color:${C.slate200};line-height:1.6;
-          box-shadow:0 4px 16px rgba(0,0,0,0.4);
-        ">${s.tooltip}</div>
+
+        <div style="font-size:11.5px;color:${C.slate400};line-height:1.65;margin-bottom:10px;">
+          ${s.body}
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:10px;color:${C.slate500};font-family:${FONT_MONO};min-width:70px;text-align:right;">${s.low}</span>
+          <input id="rec-${s.key}" type="range" min="1" max="5" value="${defaultVal}"
+            style="${sliderTrackStyle}flex:1;"
+            oninput="document.getElementById('rec-val-${s.key}').textContent=this.value"
+          >
+          <span style="font-size:10px;color:${C.slate500};font-family:${FONT_MONO};min-width:70px;">${s.high}</span>
+        </div>
+
+        <div style="font-size:10px;color:${C.complement};opacity:0.7;margin-bottom:4px;">
+          &#9654; ${s.affects}
+        </div>
+        <div style="font-size:10px;color:${C.slate500};line-height:1.5;">
+          ${s.examples}
+        </div>
       </div>`;
   });
 
@@ -392,28 +430,6 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
   html += `<div id="rec-results" style="display:flex;flex-direction:column;gap:12px;"></div>`;
 
   container.innerHTML = html;
-
-  // ── Tooltip toggle handlers ──
-  container.querySelectorAll('.slider-info-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const tipId = btn.dataset.tip;
-      const tip = document.getElementById(tipId);
-      if (!tip) return;
-      // Close all other tooltips
-      container.querySelectorAll('.slider-tooltip').forEach(t => {
-        if (t.id !== tipId) t.style.display = 'none';
-      });
-      // Toggle this one
-      tip.style.display = tip.style.display === 'none' ? 'block' : 'none';
-    });
-  });
-  // Close tooltips when clicking elsewhere
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.slider-info-btn')) {
-      container.querySelectorAll('.slider-tooltip').forEach(t => t.style.display = 'none');
-    }
-  }, { once: false });
 
   // ── Run button handler ──
   document.getElementById('rec-run-btn').addEventListener('click', () => {
