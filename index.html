@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Topology Explorer</title>
+<meta name="description" content="Interactive organizational graph theory tool. Explore 29 team structures across military, corporate, creative, political, and historical domains.">
+
+<!-- Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- App Styles -->
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- LEFT SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">Team Topology Explorer</div>
+    <div class="sidebar-subtitle">Organizational Graph Theory</div>
+  </div>
+  <div class="search-wrap">
+    <input id="search" placeholder="Search teams..." autocomplete="off">
+  </div>
+  <div class="sidebar-scroll" id="sidebar-scroll"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+  <!-- Top info bar (hidden until team selected) -->
+  <div id="infobar" style="display:none">
+    <span class="ib-name" id="ib-name"></span>
+    <span class="ib-cat" id="ib-cat"></span>
+    <span class="ib-sep"></span>
+    <div class="ib-stat"><div class="ib-stat-v" id="ib-size"></div><div class="ib-stat-l">People</div></div>
+    <div class="ib-stat"><div class="ib-stat-v" id="ib-dens"></div><div class="ib-stat-l">Density</div></div>
+    <div class="ib-stat"><div class="ib-stat-v" id="ib-clust"></div><div class="ib-stat-l">Clustering</div></div>
+    <span class="ib-topo" id="ib-topo"></span>
+  </div>
+
+  <!-- Graph + Detail split -->
+  <div id="content">
+    <div id="graph-wrap">
+      <div id="graph-container"></div>
+
+      <!-- Welcome screen -->
+      <div id="welcome">
+        <h2>Select a team structure</h2>
+        <p>Choose any team type from the left sidebar to visualize its organizational graph &mdash; roles, relationships, communication patterns, and structural intelligence.</p>
+        <div class="welcome-stats" id="welcome-stats"></div>
+      </div>
+
+      <!-- Graph controls -->
+      <div class="graph-controls">
+        <button class="graph-btn" onclick="window.__resetGraph()" title="Reset graph layout" aria-label="Reset graph layout">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+            <polyline points="21 3 21 9 15 9"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="ghint">drag nodes &middot; scroll = zoom &middot; click = inspect role</div>
+    </div>
+
+    <!-- Right detail panel -->
+    <div id="detail"><div class="dp" id="dp"></div></div>
+  </div>
+</div>
+
+<!-- App (ES Module) -->
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
