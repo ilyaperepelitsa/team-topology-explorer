@@ -378,7 +378,7 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
   document.getElementById('rec-run-btn').addEventListener('click', () => {
     const params = {
       teamSize: parseInt(document.getElementById('rec-team-size').value, 10) || 10,
-      outcomes: [...container.querySelectorAll('.rec-outcome:checked')].map(cb => cb.value),
+      tags: [...container.querySelectorAll('.rec-outcome:checked')].map(cb => cb.value),
     };
 
     sliders.forEach(s => {
