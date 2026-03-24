@@ -1,5 +1,5 @@
 // ======================================================
-// RIGHT DETAIL PANEL
+// RIGHT DETAIL PANEL + TOP ROLES BAR
 // ======================================================
 import { CATS } from '../data/categories.js';
 import { TEAMS } from '../data/teams.js';
@@ -8,11 +8,51 @@ import { EDGE_COLORS, ROLE_COLORS, classifyRole } from '../data/colors.js';
 import { analyzeTeam } from '../analysis.js';
 
 /**
- * Render team detail view in the right panel
- * @param {Object} team - current team
- * @param {string|null} selectedRoleId - currently selected role
- * @param {Function} onRoleClick - callback for role clicks
- * @param {Function} onTeamClick - callback for related team clicks
+ * Render the roles bar (horizontal strip above graph)
+ */
+export function renderRolesBar(team, selectedRoleId) {
+  if (!team) return;
+  const cat = CATS[team.cat];
+  const bar = document.getElementById('rolesbar');
+  const rolesEl = document.getElementById('rolesbar-roles');
+  const legendsEl = document.getElementById('rolesbar-legends');
+  bar.style.display = 'flex';
+
+  // Roles as compact chips
+  let rolesHtml = '';
+  team.roles.forEach(r => {
+    const rc = classifyRole(r);
+    const nc = ROLE_COLORS[rc] || cat.color;
+    const isActive = selectedRoleId === r.id;
+    rolesHtml += `<button class="rb-role ${isActive ? 'active' : ''}" onclick="window.__selectRole('${r.id}')" style="--rc:${nc}" title="${r.desc}">
+      <span class="rb-dot" style="background:${nc};${r.leader ? 'border-radius:2px' : ''}"></span>
+      <span class="rb-label">${r.label}</span>
+      ${r.leader ? '<span class="rb-leader">L</span>' : ''}
+    </button>`;
+  });
+  rolesEl.innerHTML = rolesHtml;
+
+  // Legends: node types + edge types inline
+  const usedRoleClasses = [...new Set(team.roles.map(r => classifyRole(r)))];
+  const edgeTypes = [...new Set(team.edges.map(e => e.type))];
+
+  let legendHtml = '<div class="rb-legend-group">';
+  usedRoleClasses.forEach(rc => {
+    const c = ROLE_COLORS[rc] || cat.color;
+    legendHtml += `<span class="rb-legend" style="color:${c}"><span class="rb-ldot" style="background:${c}"></span>${rc}</span>`;
+  });
+  legendHtml += '</div><div class="rb-legend-sep"></div><div class="rb-legend-group">';
+  edgeTypes.forEach(et => {
+    const ec = EDGE_COLORS[et] || '#707070';
+    const isCmd = et === 'command';
+    legendHtml += `<span class="rb-legend rb-edge" style="color:${ec}"><span class="rb-eline ${isCmd ? '' : 'dashed'}" style="background:${ec}"></span>${et}</span>`;
+  });
+  legendHtml += '</div>';
+  legendsEl.innerHTML = legendHtml;
+}
+
+/**
+ * Render team detail view — TEXT ONLY (intelligence, description, comms, strengths)
  */
 export function showTeamDetail(team, selectedRoleId, onRoleClick, onTeamClick) {
   if (!team) return;
@@ -36,7 +76,7 @@ export function showTeamDetail(team, selectedRoleId, onRoleClick, onTeamClick) {
 
   let html = '';
 
-  // Team header
+  // Team header (compact)
   html += `
     <div class="detail-header" style="--cat-color:${cat.color}">
       <div class="detail-title" style="color:${cat.color}">${team.name}</div>
@@ -49,7 +89,7 @@ export function showTeamDetail(team, selectedRoleId, onRoleClick, onTeamClick) {
       </div>
     </div>`;
 
-  // STRUCTURAL INTELLIGENCE — FIRST (most valuable)
+  // STRUCTURAL INTELLIGENCE — FIRST
   html += `<div class="d-section intelligence-section">
     <div class="section-badge">Structural Intelligence</div>
     <h3>${analysis.insights.length} Insights Computed</h3>`;
@@ -64,17 +104,9 @@ export function showTeamDetail(team, selectedRoleId, onRoleClick, onTeamClick) {
         <div class="insight-text">${insight.text}</div>
       </div>`;
   });
-
   html += '</div>';
 
-  // Description (after intelligence)
-  html += `
-    <div class="d-section">
-      <h3>Description</h3>
-      <div class="dp-desc">${team.desc}</div>
-    </div>`;
-
-  // Network Properties
+  // Network Properties (compact 3x2 grid)
   html += `
     <div class="d-section">
       <h3>Network Properties</h3>
@@ -104,10 +136,17 @@ export function showTeamDetail(team, selectedRoleId, onRoleClick, onTeamClick) {
           <div class="dp-prop-v">${team.hier}</div>
         </div>
         <div class="dp-prop">
-          <div class="dp-prop-l">Size</div>
-          <div class="dp-prop-v">${team.size}</div>
+          <div class="dp-prop-l">Comm Lines</div>
+          <div class="dp-prop-v">${analysis.metrics.commLines}</div>
         </div>
       </div>
+    </div>`;
+
+  // Description
+  html += `
+    <div class="d-section">
+      <h3>Description</h3>
+      <div class="dp-desc">${team.desc}</div>
     </div>`;
 
   // Communication
@@ -120,49 +159,16 @@ export function showTeamDetail(team, selectedRoleId, onRoleClick, onTeamClick) {
     html += `<div class="d-section"><h3>Real-World Examples</h3><div class="dp-desc" style="color:var(--accent)">${team.ex}</div></div>`;
   }
 
-  // Roles
-  html += `<div class="d-section"><h3>Roles (${team.roles.length})</h3>`;
-  team.roles.forEach(r => {
-    const rc = classifyRole(r);
-    const nc = ROLE_COLORS[rc] || cat.color;
-    html += `<div class="dp-role ${selectedRoleId === r.id ? 'active' : ''}" onclick="window.__selectRole('${r.id}')" style="--rc:${nc}">
-      <span style="display:inline-block;width:10px;height:10px;border-radius:${r.leader ? '2px' : '50%'};background:${nc};margin-right:8px;flex-shrink:0;box-shadow:0 0 6px ${nc}66"></span>
-      <span style="flex:1">${r.label}</span>
-      ${r.leader ? '<span class="leader-badge">Leader</span>' : ''}
-      <span style="font-size:9px;color:${nc};opacity:0.6;font-family:JetBrains Mono,monospace;margin-left:6px">${rc}</span>
-    </div>`;
-  });
-  html += '</div>';
-
-  // Node color legend
-  const usedRoleClasses = [...new Set(team.roles.map(r => classifyRole(r)))];
-  html += `<div class="d-section"><h3>Node Legend</h3><div class="legend-grid">`;
-  usedRoleClasses.forEach(rc => {
-    const c = ROLE_COLORS[rc] || cat.color;
-    html += `<span class="legend-item" style="color:${c}">
-      <span class="legend-dot" style="background:${c};box-shadow:0 0 4px ${c}66"></span>${rc}
-    </span>`;
-  });
-  html += '</div></div>';
-
-  // Edge types legend
-  const edgeTypes = [...new Set(team.edges.map(e => e.type))];
-  html += `<div class="d-section"><h3>Edge Legend (${edgeTypes.length})</h3><div class="legend-grid">`;
-  edgeTypes.forEach(et => {
-    const ec = EDGE_COLORS[et] || '#707070';
-    const isCmd = et === 'command';
-    html += `<span class="legend-item edge-legend" style="color:${ec};font-family:'JetBrains Mono',monospace">
-      <span class="legend-line ${isCmd ? 'solid' : 'dashed'}" style="background:${ec}"></span>${et}
-    </span>`;
-  });
-  html += '</div></div>';
-
-  // Strengths & Weaknesses
-  if (team.str?.length) {
-    html += `<div class="d-section"><h3>Strengths</h3><div class="dp-tags">${team.str.map(s => `<span class="dp-tag g">${s}</span>`).join('')}</div></div>`;
-  }
-  if (team.wk?.length) {
-    html += `<div class="d-section"><h3>Weaknesses</h3><div class="dp-tags">${team.wk.map(w => `<span class="dp-tag r">${w}</span>`).join('')}</div></div>`;
+  // Strengths & Weaknesses side by side
+  if (team.str?.length || team.wk?.length) {
+    html += '<div class="d-section">';
+    if (team.str?.length) {
+      html += `<h3>Strengths</h3><div class="dp-tags" style="margin-bottom:10px">${team.str.map(s => `<span class="dp-tag g">${s}</span>`).join('')}</div>`;
+    }
+    if (team.wk?.length) {
+      html += `<h3>Weaknesses</h3><div class="dp-tags">${team.wk.map(w => `<span class="dp-tag r">${w}</span>`).join('')}</div>`;
+    }
+    html += '</div>';
   }
 
   // Related Structures
@@ -176,14 +182,13 @@ export function showTeamDetail(team, selectedRoleId, onRoleClick, onTeamClick) {
   }
 
   dp.innerHTML = html;
+
+  // Also render the roles bar
+  renderRolesBar(team, selectedRoleId);
 }
 
 /**
- * Render role detail view in the right panel
- * @param {Object} node - { id, name, desc, isLeader }
- * @param {Object} team - current team
- * @param {Function} onBackToTeam - callback to return to team view
- * @param {Function} onRoleClick - callback for clicking connected roles
+ * Render role detail view — shows role info + connections in right panel
  */
 export function showRoleDetail(node, team, onBackToTeam, onRoleClick) {
   if (!team) return;
@@ -264,4 +269,7 @@ export function showRoleDetail(node, team, onBackToTeam, onRoleClick) {
   html += '</div></div>';
 
   dp.innerHTML = html;
+
+  // Highlight selected role in the roles bar
+  renderRolesBar(team, node.id);
 }
