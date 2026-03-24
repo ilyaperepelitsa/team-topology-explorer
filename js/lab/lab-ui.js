@@ -277,13 +277,13 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
   const defaults = getDefaultsFn ? getDefaultsFn() : {};
 
   const sliders = [
-    { key: 'decisionSpeed',     label: 'Decision Speed',        desc: 'How fast must decisions be made?' },
-    { key: 'riskTolerance',     label: 'Risk Tolerance',        desc: 'Willingness to accept failure' },
-    { key: 'autonomyDesired',   label: 'Autonomy Desired',      desc: 'Team self-governance level' },
-    { key: 'commOverheadOK',    label: 'Comm Overhead OK',      desc: 'Tolerance for coordination cost' },
-    { key: 'hierarchyTolerance',label: 'Hierarchy Tolerance',   desc: 'Comfort with chain of command' },
-    { key: 'resilienceNeeded',  label: 'Resilience Needed',     desc: 'How critical is fault tolerance?' },
-    { key: 'innovationFocus',   label: 'Innovation Focus',      desc: 'Priority on novel solutions' },
+    { key: 'decisionSpeed',     label: 'Decision Speed',        desc: 'How fast must decisions be made?', tooltip: '1 = deliberate/consensus, 5 = instant. High values favor low avg path length and high density (star/mesh topologies).' },
+    { key: 'riskTolerance',     label: 'Risk Tolerance',        desc: 'Willingness to accept failure', tooltip: '1 = zero failure acceptable, 5 = move fast and break things. Low values favor high resilience scores and redundancy.' },
+    { key: 'autonomyDesired',   label: 'Autonomy Desired',      desc: 'Team self-governance level', tooltip: '1 = strict hierarchy, 5 = fully self-organizing. High values favor high autonomy index (more peer than command links).' },
+    { key: 'commOverheadOK',    label: 'Comm Overhead OK',      desc: 'Tolerance for coordination cost', tooltip: '1 = minimal meetings/syncs, 5 = heavy coordination OK. Low values favor sparse graphs; high values allow dense mesh.' },
+    { key: 'hierarchyTolerance',label: 'Hierarchy Tolerance',   desc: 'Comfort with chain of command', tooltip: '1 = flat only, 5 = deep hierarchy OK. High values favor high command-edge ratio (tree/star topologies).' },
+    { key: 'resilienceNeeded',  label: 'Resilience Needed',     desc: 'How critical is fault tolerance?', tooltip: '1 = single points of failure OK, 5 = must survive any loss. High values favor low bottleneck count and bridge count.' },
+    { key: 'innovationFocus',   label: 'Innovation Focus',      desc: 'Priority on novel solutions', tooltip: '1 = execution focus, 5 = maximum creativity. High values favor high clustering (subgroups form), low hierarchy, high autonomy.' },
   ];
 
   const outcomes = [
@@ -318,9 +318,11 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
   sliders.forEach(s => {
     const defaultVal = (defaults[s.key] != null) ? defaults[s.key] : 3;
     html += `
-      <div>
+      <div title="${s.tooltip}" style="cursor:help;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
-          <label style="font-size:11px;color:${C.slate400};font-weight:600;">${s.label}</label>
+          <label style="font-size:11px;color:${C.slate400};font-weight:600;cursor:help;">${s.label}
+            <span style="font-size:9px;color:${C.slate500};margin-left:3px;opacity:0.6;" title="${s.tooltip}">&#9432;</span>
+          </label>
           <span id="rec-val-${s.key}" style="font:12px ${FONT_MONO};color:${C.accent};font-weight:700;">${defaultVal}</span>
         </div>
         <input id="rec-${s.key}" type="range" min="1" max="5" value="${defaultVal}"
@@ -441,8 +443,17 @@ function _renderRecommenderResults(results) {
         </div>
       </div>
 
+      <!-- Team info -->
+      <div style="font-size:11px;color:${C.slate400};line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+        ${team.desc || ''}
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <span style="font-size:10px;font-family:${FONT_MONO};color:${C.slate400};padding:2px 8px;border-radius:5px;background:rgba(15,23,42,0.4);border:1px solid rgba(51,65,85,0.3);">${team.size || '?'} people</span>
+        <span style="font-size:10px;font-family:${FONT_MONO};color:${C.slate400};padding:2px 8px;border-radius:5px;background:rgba(15,23,42,0.4);border:1px solid rgba(51,65,85,0.3);">${team.hier || ''}</span>
+      </div>
+
       <!-- Score bar -->
-      <div style="margin-bottom:12px;">
+      <div style="margin-bottom:8px;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:${C.slate500};font-weight:600;">Fit Score</span>
           <span style="font:14px ${FONT_MONO};font-weight:700;color:${scoreColor};">${score}%</span>
@@ -451,6 +462,12 @@ function _renderRecommenderResults(results) {
           <div style="height:100%;width:${score}%;border-radius:3px;background:${scoreColor};
             transition:width 0.5s ease;"></div>
         </div>
+      </div>
+      <!-- Sub-scores -->
+      <div style="display:flex;gap:12px;margin-bottom:12px;font-size:10px;font-family:${FONT_MONO};">
+        <span style="color:${C.slate500};" title="How well graph metrics match your sliders">Features: <span style="color:${C.slate200};font-weight:600;">${Math.round((item.featureScore || 0) * 100)}%</span></span>
+        <span style="color:${C.slate500};" title="How many desired tags match this team's strengths">Tags: <span style="color:${C.slate200};font-weight:600;">${Math.round((item.tagScore || 0) * 100)}%</span></span>
+        <span style="color:${C.slate500};" title="How close the team size is to your desired size">Size: <span style="color:${C.slate200};font-weight:600;">${Math.round((item.sizeScore || 0) * 100)}%</span></span>
       </div>`;
 
     // Matched tags
