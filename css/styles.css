@@ -231,20 +231,43 @@ body {
   border-bottom: 1px solid rgba(51, 65, 85, 0.35);
   background: rgba(11, 18, 32, 0.88);
   backdrop-filter: blur(12px);
+  z-index: 4;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+#rolesbar-content {
+  display: flex;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+/* Left: roles + legends */
+#rolesbar-left {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 16px;
-  z-index: 4;
-  overflow-y: auto;
-  max-height: 260px;
+}
+
+/* Right: props + facts */
+#rolesbar-right {
+  width: 300px;
+  min-width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-left: 1px solid rgba(51, 65, 85, 0.35);
+  padding-left: 12px;
 }
 
 /* Role cards grid */
 #rolesbar-roles {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 5px;
 }
 
 .rb-card {
@@ -386,6 +409,104 @@ body {
 .rb-edge {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
+}
+
+/* ── Roles bar: Network props ── */
+.rb-props-title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--slate-500);
+  margin-bottom: 6px;
+}
+.rb-props-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+}
+.rb-prop {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.3);
+}
+.rb-prop-l {
+  font-size: 8px;
+  color: var(--slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.rb-prop-v {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--slate-200);
+  margin-top: 1px;
+}
+.rb-prop-bar {
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin-top: 3px;
+}
+.rb-prop-bar > div {
+  height: 100%;
+  border-radius: 1px;
+}
+
+/* ── Roles bar: Facts ── */
+.rb-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0;
+}
+.rb-fact-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--slate-500);
+}
+.rb-fact-val {
+  font-size: 11px;
+  line-height: 1.4;
+}
+.rb-fact-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.rb-tag {
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+  border: 1px solid rgba(51, 65, 85, 0.4);
+  background: rgba(15, 23, 42, 0.4);
+  color: var(--slate-400);
+}
+.rb-tag.g {
+  color: var(--complement);
+  border-color: rgba(128, 203, 196, 0.2);
+  background: rgba(128, 203, 196, 0.06);
+}
+.rb-tag.r {
+  color: #f07068;
+  border-color: rgba(240, 112, 104, 0.2);
+  background: rgba(240, 112, 104, 0.06);
+}
+.rb-tag.related {
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.rb-tag.related:hover {
+  background: rgba(200, 128, 118, 0.08);
+}
+.rb-tag.related small {
+  opacity: 0.5;
+  font-size: 9px;
+  margin-left: 3px;
 }
 
 /* ── Graph + Detail Split ── */

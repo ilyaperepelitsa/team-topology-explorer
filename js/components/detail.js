@@ -9,14 +9,17 @@ import { analyzeTeam } from '../analysis.js';
 
 /**
  * Render the roles bar (horizontal strip above graph)
+ * Contains: role cards, legends, network props, examples, strengths/weaknesses, related
  */
-export function renderRolesBar(team, selectedRoleId) {
+export function renderRolesBar(team, selectedRoleId, analysis) {
   if (!team) return;
   const cat = CATS[team.cat];
   const bar = document.getElementById('rolesbar');
   const rolesEl = document.getElementById('rolesbar-roles');
   const legendsEl = document.getElementById('rolesbar-legends');
-  bar.style.display = 'flex';
+  const propsEl = document.getElementById('rolesbar-props');
+  const factsEl = document.getElementById('rolesbar-facts');
+  bar.style.display = 'block';
 
   // Full role cards with all info
   let rolesHtml = '';
@@ -55,6 +58,68 @@ export function renderRolesBar(team, selectedRoleId) {
   });
   legendHtml += '</div>';
   legendsEl.innerHTML = legendHtml;
+
+  // ── Right side: Network props + facts ──
+  if (!analysis) {
+    // If no analysis passed, just show roles
+    if (propsEl) propsEl.innerHTML = '';
+    if (factsEl) factsEl.innerHTML = '';
+    return;
+  }
+
+  // Network properties as compact stat pills
+  let propsHtml = `<div class="rb-props-title">Network</div><div class="rb-props-grid">`;
+  const props = [
+    { l: 'Density', v: team.dens.toFixed(2), c: cat.color, pct: team.dens * 100 },
+    { l: 'Clustering', v: team.clust.toFixed(2), c: 'var(--complement)', pct: team.clust * 100 },
+    { l: 'Avg Path', v: analysis.metrics.avgPathLength.toFixed(1), c: '#aa88ff', pct: Math.min(analysis.metrics.avgPathLength / 5 * 100, 100) },
+    { l: 'Autonomy', v: (analysis.metrics.autonomyIndex * 100).toFixed(0) + '%', c: '#88ff88', pct: analysis.metrics.autonomyIndex * 100 },
+    { l: 'Hierarchy', v: team.hier, c: null },
+    { l: 'Comm Lines', v: analysis.metrics.commLines, c: null },
+  ];
+  props.forEach(p => {
+    propsHtml += `<div class="rb-prop">
+      <div class="rb-prop-l">${p.l}</div>
+      <div class="rb-prop-v">${p.v}</div>
+      ${p.c ? `<div class="rb-prop-bar"><div style="width:${p.pct}%;background:${p.c}"></div></div>` : ''}
+    </div>`;
+  });
+  propsHtml += '</div>';
+  if (propsEl) propsEl.innerHTML = propsHtml;
+
+  // Facts: examples, strengths, weaknesses, related
+  let factsHtml = '';
+
+  if (team.ex) {
+    factsHtml += `<div class="rb-fact"><span class="rb-fact-label">Examples</span><span class="rb-fact-val" style="color:var(--accent)">${team.ex}</span></div>`;
+  }
+
+  if (team.str?.length) {
+    factsHtml += `<div class="rb-fact"><span class="rb-fact-label">Strengths</span><div class="rb-fact-tags">${team.str.map(s => `<span class="rb-tag g">${s}</span>`).join('')}</div></div>`;
+  }
+
+  if (team.wk?.length) {
+    factsHtml += `<div class="rb-fact"><span class="rb-fact-label">Weaknesses</span><div class="rb-fact-tags">${team.wk.map(w => `<span class="rb-tag r">${w}</span>`).join('')}</div></div>`;
+  }
+
+  // Cross-links
+  const conns = XLINKS
+    .filter(x => x.s === team.id || x.t === team.id)
+    .map(x => {
+      const oid = x.s === team.id ? x.t : x.s;
+      const other = TEAMS.find(tt => tt.id === oid);
+      return other ? { team: other, rel: x.r } : null;
+    })
+    .filter(Boolean);
+
+  if (conns.length) {
+    factsHtml += `<div class="rb-fact"><span class="rb-fact-label">Related</span><div class="rb-fact-tags">${conns.map(c => {
+      const cc = CATS[c.team.cat];
+      return `<span class="rb-tag related" style="color:${cc.color};border-color:${cc.color}33" onclick="window.__loadTeam('${c.team.id}')">${c.team.name} <small>${c.rel}</small></span>`;
+    }).join('')}</div></div>`;
+  }
+
+  if (factsEl) factsEl.innerHTML = factsHtml;
 }
 
 /**
@@ -112,42 +177,6 @@ export function showTeamDetail(team, selectedRoleId, onRoleClick, onTeamClick) {
   });
   html += '</div>';
 
-  // Network Properties (compact 3x2 grid)
-  html += `
-    <div class="d-section">
-      <h3>Network Properties</h3>
-      <div class="dp-props">
-        <div class="dp-prop">
-          <div class="dp-prop-l">Density</div>
-          <div class="dp-prop-v">${team.dens.toFixed(2)}</div>
-          <div class="prop-bar"><div class="prop-bar-fill" style="width:${team.dens * 100}%;background:${cat.color}"></div></div>
-        </div>
-        <div class="dp-prop">
-          <div class="dp-prop-l">Clustering</div>
-          <div class="dp-prop-v">${team.clust.toFixed(2)}</div>
-          <div class="prop-bar"><div class="prop-bar-fill" style="width:${team.clust * 100}%;background:var(--complement)"></div></div>
-        </div>
-        <div class="dp-prop">
-          <div class="dp-prop-l">Avg Path</div>
-          <div class="dp-prop-v">${analysis.metrics.avgPathLength.toFixed(1)}</div>
-          <div class="prop-bar"><div class="prop-bar-fill" style="width:${Math.min(analysis.metrics.avgPathLength / 5 * 100, 100)}%;background:#aa88ff"></div></div>
-        </div>
-        <div class="dp-prop">
-          <div class="dp-prop-l">Autonomy</div>
-          <div class="dp-prop-v">${(analysis.metrics.autonomyIndex * 100).toFixed(0)}%</div>
-          <div class="prop-bar"><div class="prop-bar-fill" style="width:${analysis.metrics.autonomyIndex * 100}%;background:#88ff88"></div></div>
-        </div>
-        <div class="dp-prop">
-          <div class="dp-prop-l">Hierarchy</div>
-          <div class="dp-prop-v">${team.hier}</div>
-        </div>
-        <div class="dp-prop">
-          <div class="dp-prop-l">Comm Lines</div>
-          <div class="dp-prop-v">${analysis.metrics.commLines}</div>
-        </div>
-      </div>
-    </div>`;
-
   // Description
   html += `
     <div class="d-section">
@@ -160,37 +189,10 @@ export function showTeamDetail(team, selectedRoleId, onRoleClick, onTeamClick) {
     html += `<div class="d-section"><h3>Communication Pattern</h3><div class="dp-desc">${team.comms}</div></div>`;
   }
 
-  // Real-world examples
-  if (team.ex) {
-    html += `<div class="d-section"><h3>Real-World Examples</h3><div class="dp-desc" style="color:var(--accent)">${team.ex}</div></div>`;
-  }
-
-  // Strengths & Weaknesses side by side
-  if (team.str?.length || team.wk?.length) {
-    html += '<div class="d-section">';
-    if (team.str?.length) {
-      html += `<h3>Strengths</h3><div class="dp-tags" style="margin-bottom:10px">${team.str.map(s => `<span class="dp-tag g">${s}</span>`).join('')}</div>`;
-    }
-    if (team.wk?.length) {
-      html += `<h3>Weaknesses</h3><div class="dp-tags">${team.wk.map(w => `<span class="dp-tag r">${w}</span>`).join('')}</div>`;
-    }
-    html += '</div>';
-  }
-
-  // Related Structures
-  if (conns.length) {
-    html += `<div class="d-section"><h3>Related Structures (${conns.length})</h3>`;
-    conns.forEach(c => {
-      const cc = CATS[c.team.cat];
-      html += `<div class="dp-conn" onclick="window.__loadTeam('${c.team.id}')"><span style="color:${cc.color}">${c.team.name}</span><span class="dp-conn-rel">${c.rel}</span></div>`;
-    });
-    html += '</div>';
-  }
-
   dp.innerHTML = html;
 
-  // Also render the roles bar
-  renderRolesBar(team, selectedRoleId);
+  // Render the roles bar with all props/facts
+  renderRolesBar(team, selectedRoleId, analysis);
 }
 
 /**
