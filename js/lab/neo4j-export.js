@@ -172,7 +172,7 @@ export function generateCypherExport(teams, xlinks, cats, allFeatures) {
         .toUpperCase()
         .replace(/[^A-Z0-9_]/g, '_')
         .replace(/_+/g, '_')
-        .replace(/^_|_$/g, '');
+        .replace(/^_|_$/g, '') || 'RELATES_TO';
       lines.push(
         `MATCH (a:Role {id: '${cypherEsc(srcId)}'}), (b:Role {id: '${cypherEsc(tgtId)}'})` +
         ` CREATE (a)-[:${relType} {originalType: '${cypherEsc(edge.type)}'}]->(b);`
@@ -273,7 +273,7 @@ export function generateCSVExport(teams, xlinks, cats, allFeatures) {
         .toUpperCase()
         .replace(/[^A-Z0-9_]/g, '_')
         .replace(/_+/g, '_')
-        .replace(/^_|_$/g, '');
+        .replace(/^_|_$/g, '') || 'RELATES_TO';
       relRows.push([
         csvEsc(srcId),
         csvEsc(tgtId),

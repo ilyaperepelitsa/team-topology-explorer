@@ -91,13 +91,25 @@ const sliderTrackStyle = `
  * @param {Object} regressionFns - { correlationMatrix, tagCorrelations, linearRegression, groupAnalysis }
  */
 export function renderRegressionTab(container, allFeatures, regressionFns) {
-  const { correlationMatrix, tagCorrelations, linearRegression, groupAnalysis } = regressionFns;
+  const { correlationMatrix, tagCorrelations, linearRegression } = regressionFns;
 
-  // Compute correlation matrix
-  const matrix = correlationMatrix(allFeatures);
+  // Extract feature names and build numeric matrix from allFeatures objects
+  const featureNames = allFeatures.length > 0 ? Object.keys(allFeatures[0].features) : [];
+  const featureMatrix = allFeatures.map(item => item.features);
 
-  // Compute tag correlations
-  const tagData = tagCorrelations(allFeatures);
+  // Compute correlation matrix (expects: featureNames[], featureMatrix[])
+  const { labels: corrLabels, matrix } = correlationMatrix(featureNames, featureMatrix);
+
+  // Compute tag correlations (expects: allFeatures[], tagType)
+  const strengthTags = tagCorrelations(allFeatures, 'strengths');
+  const weaknessTags = tagCorrelations(allFeatures, 'weaknesses');
+  const tagData = { strengths: strengthTags, weaknesses: weaknessTags };
+
+  // Cache feature data arrays for scatter plots
+  const featureArrays = {};
+  featureNames.forEach(name => {
+    featureArrays[name] = allFeatures.map(item => item.features[name] || 0);
+  });
 
   // Build heatmap HTML
   let html = '';
@@ -110,7 +122,7 @@ export function renderRegressionTab(container, allFeatures, regressionFns) {
         <thead><tr>
           <th style="padding:4px 6px;position:sticky;top:0;left:0;z-index:2;background:${C.brand};"></th>`;
 
-  allFeatures.forEach(f => {
+  featureNames.forEach(f => {
     html += `<th style="
       padding:4px 6px;writing-mode:vertical-lr;text-orientation:mixed;
       max-width:28px;color:${C.slate400};font-weight:500;
@@ -121,13 +133,13 @@ export function renderRegressionTab(container, allFeatures, regressionFns) {
 
   html += '</tr></thead><tbody>';
 
-  allFeatures.forEach((rowF, ri) => {
+  featureNames.forEach((rowF, ri) => {
     html += `<tr><td style="
       padding:4px 8px;white-space:nowrap;color:${C.slate400};font-weight:500;
       position:sticky;left:0;z-index:1;background:${C.brand};font-size:9px;
     ">${rowF}</td>`;
 
-    allFeatures.forEach((colF, ci) => {
+    featureNames.forEach((colF, ci) => {
       const r = matrix[ri][ci];
       const bg = _corrColor(r);
       const textColor = Math.abs(r) > 0.6 ? '#fff' : C.slate200;
@@ -192,7 +204,12 @@ export function renderRegressionTab(container, allFeatures, regressionFns) {
       const colFeature = cell.dataset.colFeature;
       if (rowFeature === colFeature) return;
 
-      const result = linearRegression(rowFeature, colFeature);
+      // Get actual numeric arrays for the two features
+      const xArr = featureArrays[rowFeature];
+      const yArr = featureArrays[colFeature];
+      if (!xArr || !yArr) return;
+
+      const result = linearRegression(xArr, yArr);
       if (!result) return;
 
       const scatterWrap = document.getElementById('lab-scatter-wrap');
@@ -204,33 +221,27 @@ export function renderRegressionTab(container, allFeatures, regressionFns) {
       const statsEl = document.getElementById('lab-scatter-stats');
       const legendEl = document.getElementById('lab-scatter-legend');
 
-      renderScatterPlot(
-        canvas,
-        result.xData,
-        result.yData,
-        rowFeature,
-        colFeature,
-        result.teams || TEAMS,
-        result.categories || Object.keys(CATS)
-      );
+      const teamObjs = allFeatures.map(item => item.team);
+      renderScatterPlot(canvas, xArr, yArr, rowFeature, colFeature, teamObjs, Object.keys(CATS));
 
-      // Stats
+      // Stats — use actual return property names from regression.js: slope, intercept, r2, p, equation
+      const r = Math.sqrt(Math.abs(result.r2)) * (result.slope >= 0 ? 1 : -1);
       statsEl.innerHTML = `
         <div style="color:${C.accent};font-weight:700;margin-bottom:6px;">Regression</div>
         <div>y = <span style="color:${C.slate200}">${result.slope.toFixed(4)}</span>x +
              <span style="color:${C.slate200}">${result.intercept.toFixed(4)}</span></div>
-        <div>R&sup2; = <span style="color:${C.complement};font-weight:700;">${result.rSquared.toFixed(4)}</span></div>
-        <div>r = <span style="color:${C.slate200}">${result.r.toFixed(4)}</span></div>
-        <div>p-value = <span style="color:${result.pValue < 0.05 ? C.complement : '#f07068'};font-weight:700;">
-          ${result.pValue < 0.001 ? result.pValue.toExponential(2) : result.pValue.toFixed(4)}</span></div>
-        <div>n = <span style="color:${C.slate200}">${result.n}</span></div>
+        <div>R&sup2; = <span style="color:${C.complement};font-weight:700;">${result.r2.toFixed(4)}</span></div>
+        <div>r = <span style="color:${C.slate200}">${r.toFixed(4)}</span></div>
+        <div>p-value = <span style="color:${result.p < 0.05 ? C.complement : '#f07068'};font-weight:700;">
+          ${result.p < 0.001 ? result.p.toExponential(2) : result.p.toFixed(4)}</span></div>
+        <div>n = <span style="color:${C.slate200}">${allFeatures.length}</span></div>
         <div style="margin-top:8px;font-size:10px;color:${C.slate500};">
-          ${result.pValue < 0.05 ? 'Statistically significant (p < 0.05)' : 'Not statistically significant'}
+          ${result.p < 0.05 ? 'Statistically significant (p < 0.05)' : 'Not statistically significant'}
         </div>
       `;
 
       // Legend
-      const usedCats = [...new Set((result.teams || TEAMS).map(t => t.cat))];
+      const usedCats = [...new Set(teamObjs.map(t => t.cat))];
       legendEl.innerHTML = usedCats.map(catKey => {
         const cat = CATS[catKey];
         if (!cat) return '';
@@ -374,7 +385,7 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
       params[s.key] = parseInt(document.getElementById(`rec-${s.key}`).value, 10);
     });
 
-    const results = recommendFn(params);
+    const results = recommendFn(params, allFeatures);
     _renderRecommenderResults(results);
   });
 }
@@ -1033,7 +1044,7 @@ function _downloadFile(filename, content, mimeType) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 200);
 }
 
 /**

@@ -278,6 +278,6 @@ export function showRoleDetail(node, team, onBackToTeam, onRoleClick) {
 
   dp.innerHTML = html;
 
-  // Highlight selected role in the roles bar
-  renderRolesBar(team, node.id);
+  // Highlight selected role in the roles bar (with analysis for props/facts)
+  renderRolesBar(team, node.id, analyzeTeam(team));
 }
