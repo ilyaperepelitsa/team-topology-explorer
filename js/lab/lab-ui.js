@@ -277,48 +277,13 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
   const defaults = getDefaultsFn ? getDefaultsFn() : {};
 
   const sliders = [
-    { key: 'decisionSpeed', label: 'Decision Speed',
-      low: 'Deliberate', high: 'Instant',
-      body: 'How quickly must the team make and execute decisions? Low = committee-style consensus with review cycles (e.g., UN Security Council). High = split-second calls by one person (e.g., Fire Team leader).',
-      affects: 'Favors low avg path length, high density, star/mesh topologies.',
-      examples: '1: Legal review boards, academic committees | 5: SEAL platoons, pit crews, startup founders',
-    },
-    { key: 'riskTolerance', label: 'Risk Tolerance',
-      low: 'Zero failure', high: 'Move fast',
-      body: 'How much structural fragility is acceptable? Low = mission-critical, any single failure cascades (e.g., nuclear operations). High = fail-fast culture where individual failures are contained (e.g., startup experiments).',
-      affects: 'Low values favor high resilience scores, redundancy, paired specialties, few bridge edges.',
-      examples: '1: Aviation, surgery, infrastructure | 5: Hackathons, R&D labs, venture portfolios',
-    },
-    { key: 'autonomyDesired', label: 'Autonomy Desired',
-      low: 'Directed', high: 'Self-governing',
-      body: 'How much freedom should team members have to make independent decisions? Low = clear chain of command, orders flow top-down (e.g., Roman Legion). High = every member decides their own work (e.g., Valve flat structure).',
-      affects: 'High values favor high autonomy index (more peer/lateral links than command links).',
-      examples: '1: Military units, assembly lines | 5: Open source BDFL, Valve, artist collectives',
-    },
-    { key: 'commOverheadOK', label: 'Communication Overhead',
-      low: 'Minimal', high: 'Heavy OK',
-      body: 'How much coordination cost is acceptable? Low = people should work independently with minimal syncs (e.g., star cell network). High = constant communication is expected and productive (e.g., basketball team calling every play).',
-      affects: 'Low values favor sparse graphs with few edges; high values allow dense mesh topologies.',
-      examples: '1: Remote async teams, compartmented cells | 5: War rooms, pair programming, pit crews',
-    },
-    { key: 'hierarchyTolerance', label: 'Hierarchy Tolerance',
-      low: 'Flat only', high: 'Deep layers OK',
-      body: 'How many layers of management are acceptable? Low = everyone is a peer, no bosses (e.g., pirate crew democracy). High = multiple management layers with clear rank (e.g., traditional corporate, Roman Legion).',
-      affects: 'High values favor high command-edge ratio, tree and layered star topologies.',
-      examples: '1: Holacracy, co-ops, YC teams | 5: Fortune 500 hierarchy, military command chains',
-    },
-    { key: 'resilienceNeeded', label: 'Resilience Needed',
-      low: 'Fragile OK', high: 'Must survive any loss',
-      body: 'What happens if a key person is removed? Low = single points of failure are acceptable because the mission is short or replacements are available. High = the team must continue operating even after losing any individual member.',
-      affects: 'High values favor low bottleneck count, low bridge count, cross-training, mesh connectivity.',
-      examples: '1: Solo founder, BDFL projects | 5: SEAL platoons (cross-trained), SAS patrols (complete graph)',
-    },
-    { key: 'innovationFocus', label: 'Innovation Focus',
-      low: 'Execution', high: 'Maximum creativity',
-      body: 'Is the primary goal to execute a known playbook or to discover novel solutions? Low = optimize efficiency of known processes (e.g., F1 pit crew). High = explore unknown solution spaces (e.g., Skunk Works, Tiger Team).',
-      affects: 'High values favor high clustering (subgroups form naturally), low hierarchy, high autonomy.',
-      examples: '1: Manufacturing, logistics, pit stops | 5: Skunk Works, R&D labs, design sprints',
-    },
+    { key: 'decisionSpeed',      label: 'Decision Speed',      low: 'Deliberate', high: 'Instant',      desc: 'How fast must decisions be made?',     tip: '1 = committee consensus (UN Security Council). 5 = split-second calls (Fire Team). Favors low avg path length, high density, star/mesh topologies.' },
+    { key: 'riskTolerance',      label: 'Risk Tolerance',      low: 'Zero failure', high: 'Move fast',  desc: 'Willingness to accept failure',        tip: '1 = mission-critical, no single failure allowed (aviation, surgery). 5 = fail-fast culture (startups, hackathons). Low favors high resilience, redundancy, paired specialties.' },
+    { key: 'autonomyDesired',    label: 'Autonomy Desired',    low: 'Directed', high: 'Self-governing', desc: 'Team self-governance level',            tip: '1 = strict chain of command (Roman Legion). 5 = fully self-organizing (Valve, open source). High favors more peer links than command links.' },
+    { key: 'commOverheadOK',     label: 'Comm Overhead',       low: 'Minimal', high: 'Heavy OK',       desc: 'Tolerance for coordination cost',       tip: '1 = work independently, minimal syncs (star cell). 5 = constant communication (basketball, war room). Low favors sparse graphs; high allows dense mesh.' },
+    { key: 'hierarchyTolerance', label: 'Hierarchy Tolerance',  low: 'Flat only', high: 'Deep layers',  desc: 'Comfort with chain of command',         tip: '1 = everyone is a peer (pirate democracy, YC teams). 5 = multiple management layers (Fortune 500, military). High favors tree/star topologies.' },
+    { key: 'resilienceNeeded',   label: 'Resilience Needed',   low: 'Fragile OK', high: 'Bulletproof', desc: 'How critical is fault tolerance?',      tip: '1 = SPOFs acceptable, short mission (solo founder). 5 = must survive any loss (SEAL cross-training, SAS complete graph). High favors low bottleneck/bridge count.' },
+    { key: 'innovationFocus',    label: 'Innovation Focus',    low: 'Execution', high: 'Creativity',   desc: 'Priority on novel solutions',           tip: '1 = execute known playbook (F1 pit crew, manufacturing). 5 = explore unknown solutions (Skunk Works, Tiger Team). High favors clustering, low hierarchy, high autonomy.' },
   ];
 
   const outcomes = [
@@ -348,43 +313,25 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
       >
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:20px;">`;
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;margin-bottom:20px;">`;
 
   sliders.forEach(s => {
     const defaultVal = (defaults[s.key] != null) ? defaults[s.key] : 3;
     html += `
-      <div style="
-        padding:14px 16px;border-radius:10px;
-        background:rgba(11,18,32,0.4);
-        border:1px solid rgba(51,65,85,0.35);
-      ">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:13px;font-weight:700;color:${C.slate200};">${s.label}</div>
-          <span id="rec-val-${s.key}" style="
-            font:16px ${FONT_MONO};font-weight:800;color:${C.accent};
-            min-width:24px;text-align:center;
-          ">${defaultVal}</span>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+          <label data-tooltip="${s.tip}" style="font-size:11px;color:${C.slate400};font-weight:600;border-bottom:1px dotted ${C.slate500};">${s.label}</label>
+          <span id="rec-val-${s.key}" style="font:12px ${FONT_MONO};color:${C.accent};font-weight:700;">${defaultVal}</span>
         </div>
-
-        <div style="font-size:11.5px;color:${C.slate400};line-height:1.65;margin-bottom:10px;">
-          ${s.body}
-        </div>
-
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:10px;color:${C.slate500};font-family:${FONT_MONO};min-width:70px;text-align:right;">${s.low}</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:9px;color:${C.slate500};font-family:${FONT_MONO};min-width:55px;text-align:right;">${s.low}</span>
           <input id="rec-${s.key}" type="range" min="1" max="5" value="${defaultVal}"
             style="${sliderTrackStyle}flex:1;"
             oninput="document.getElementById('rec-val-${s.key}').textContent=this.value"
           >
-          <span style="font-size:10px;color:${C.slate500};font-family:${FONT_MONO};min-width:70px;">${s.high}</span>
+          <span style="font-size:9px;color:${C.slate500};font-family:${FONT_MONO};min-width:55px;">${s.high}</span>
         </div>
-
-        <div style="font-size:10px;color:${C.complement};opacity:0.7;margin-bottom:4px;">
-          &#9654; ${s.affects}
-        </div>
-        <div style="font-size:10px;color:${C.slate500};line-height:1.5;">
-          ${s.examples}
-        </div>
+        <div style="font-size:9px;color:${C.slate500};margin-top:2px;">${s.desc}</div>
       </div>`;
   });
 
