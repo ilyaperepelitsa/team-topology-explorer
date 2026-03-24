@@ -11,11 +11,9 @@
 [data-tooltip]::after {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: 320px;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 280px;
   padding: 10px 14px;
   border-radius: 8px;
   background: rgba(11, 18, 32, 0.97);
