@@ -109,6 +109,13 @@ function renderWelcomeStats() {
 buildNav('', null, loadTeam);
 renderWelcomeStats();
 
+// Auto-load team from URL parameter (?team=X)
+const urlParams = new URLSearchParams(window.location.search);
+const teamParam = urlParams.get('team');
+if (teamParam) {
+  loadTeam(teamParam);
+}
+
 // Search
 document.getElementById('search').oninput = e => buildNav(e.target.value, currentTeam, loadTeam);
 

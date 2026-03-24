@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analysis Lab – Team Topology Explorer</title>
+<meta name="description" content="Analysis Lab for Team Topology Explorer. Regression analysis, structure recommender, and Neo4j export tools for organizational graph data.">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Styles -->
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/lab.css">
+</head>
+<body>
+
+<!-- LAB HEADER -->
+<header id="lab-header">
+  <div class="lab-header-left">
+    <a href="index.html" class="lab-back" title="Back to Explorer">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      <span>Explorer</span>
+    </a>
+    <span class="lab-header-sep"></span>
+    <div class="lab-brand">
+      <span class="lab-brand-name">Team Topology Explorer</span>
+      <span class="lab-brand-subtitle">Analysis Lab</span>
+    </div>
+  </div>
+</header>
+
+<!-- TAB BAR -->
+<nav id="lab-tabs">
+  <button class="lab-tab active" data-tab="regression">Regression Analysis</button>
+  <button class="lab-tab" data-tab="recommender">Structure Recommender</button>
+  <button class="lab-tab" data-tab="neo4j">Neo4j Export &amp; Query</button>
+</nav>
+
+<!-- CONTENT AREA -->
+<div id="lab-content"></div>
+
+<!-- App (ES Module) -->
+<script type="module" src="js/lab.js"></script>
+</body>
+</html>

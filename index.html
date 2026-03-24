@@ -14,6 +14,22 @@
 
 <!-- App Styles -->
 <link rel="stylesheet" href="css/styles.css">
+<style>
+  .sidebar-lab-link {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.45);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .sidebar-lab-link:hover {
+    color: rgba(255,255,255,0.85);
+    text-decoration: underline;
+  }
+</style>
 </head>
 <body>
 
@@ -22,6 +38,7 @@
   <div class="sidebar-header">
     <div class="sidebar-brand">Team Topology Explorer</div>
     <div class="sidebar-subtitle">Organizational Graph Theory</div>
+    <a href="lab.html" class="sidebar-lab-link">Analysis Lab</a>
   </div>
   <div class="search-wrap">
     <input id="search" placeholder="Search teams..." autocomplete="off">
