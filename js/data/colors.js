@@ -82,27 +82,27 @@ export const EDGE_COLORS = {
 // ROLE COLORS - visual encoding of role classifications
 // ======================================================
 export const ROLE_COLORS = {
-  leader: '#c88076',
-  commander: '#c88076',
-  operator: '#80cbc4',
-  fighter: '#80cbc4',
-  support: '#8dd3c7',
-  medic: '#8dd3c7',
-  specialist: '#8dd3c7',
-  intel: '#80aaff',
-  comms: '#80aaff',
-  signals: '#80aaff',
-  engineer: '#c4d96f',
-  technical: '#c4d96f',
-  builder: '#c4d96f',
-  admin: '#fbb6ce',
-  advisory: '#fbb6ce',
-  advisor: '#fbb6ce',
-  member: '#9ca3af',
-  crew: '#9ca3af',
-  political: '#a78bfa',
-  elected: '#a78bfa',
-  creative: '#f9a8d4',
+  leader:    '#e8c444',   // gold — appointed/designated leaders
+  commander: '#f07040',   // burnt orange — command authority
+  operator:  '#44d4b0',   // mint — frontline operators
+  fighter:   '#30b888',   // darker green — combat roles
+  support:   '#6ec8e8',   // sky blue — support/logistics
+  medic:     '#44e888',   // bright green — medical
+  specialist:'#58b0d8',   // steel blue — technical specialist
+  intel:     '#7088ff',   // indigo — intelligence
+  comms:     '#40a0f0',   // cerulean — communications
+  signals:   '#5898e0',   // mid blue — signals
+  engineer:  '#b8d84c',   // lime — engineering/build
+  technical: '#90c040',   // olive green — technical
+  builder:   '#a8c848',   // yellow-green — construction
+  admin:     '#e888c0',   // pink — administrative
+  advisory:  '#c888e8',   // lavender — advisory/counsel
+  advisor:   '#b878d8',   // purple-pink — advisor
+  member:    '#8898b0',   // slate — rank and file
+  crew:      '#7080a0',   // darker slate — crew
+  political: '#a878f0',   // purple — political
+  elected:   '#8860e0',   // deeper purple — elected roles
+  creative:  '#f080b8',   // rose — creative roles
 };
 
 // ======================================================
