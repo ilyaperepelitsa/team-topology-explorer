@@ -317,11 +317,21 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
 
   sliders.forEach(s => {
     const defaultVal = (defaults[s.key] != null) ? defaults[s.key] : 3;
+    const tipId = `tip-${s.key}`;
     html += `
-      <div title="${s.tooltip}" style="cursor:help;">
+      <div style="position:relative;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
-          <label style="font-size:11px;color:${C.slate400};font-weight:600;cursor:help;">${s.label}
-            <span style="font-size:9px;color:${C.slate500};margin-left:3px;opacity:0.6;" title="${s.tooltip}">&#9432;</span>
+          <label style="font-size:11px;color:${C.slate400};font-weight:600;">
+            ${s.label}
+            <span class="slider-info-btn" data-tip="${tipId}" style="
+              display:inline-flex;align-items:center;justify-content:center;
+              width:15px;height:15px;border-radius:50%;
+              font-size:9px;color:${C.complement};cursor:pointer;
+              border:1px solid rgba(128,203,196,0.3);
+              background:rgba(128,203,196,0.08);
+              margin-left:4px;vertical-align:middle;
+              transition:all ${C.transition};
+            ">?</span>
           </label>
           <span id="rec-val-${s.key}" style="font:12px ${FONT_MONO};color:${C.accent};font-weight:700;">${defaultVal}</span>
         </div>
@@ -330,6 +340,13 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
           oninput="document.getElementById('rec-val-${s.key}').textContent=this.value"
         >
         <div style="font-size:9px;color:${C.slate500};margin-top:2px;">${s.desc}</div>
+        <div id="${tipId}" class="slider-tooltip" style="
+          display:none;position:absolute;top:100%;left:0;right:0;z-index:20;
+          margin-top:6px;padding:10px 12px;border-radius:8px;
+          background:rgba(11,18,32,0.95);border:1px solid rgba(128,203,196,0.25);
+          font-size:11px;color:${C.slate200};line-height:1.6;
+          box-shadow:0 4px 16px rgba(0,0,0,0.4);
+        ">${s.tooltip}</div>
       </div>`;
   });
 
@@ -375,6 +392,28 @@ export function renderRecommenderTab(container, allFeatures, recommendFn, getDef
   html += `<div id="rec-results" style="display:flex;flex-direction:column;gap:12px;"></div>`;
 
   container.innerHTML = html;
+
+  // ── Tooltip toggle handlers ──
+  container.querySelectorAll('.slider-info-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const tipId = btn.dataset.tip;
+      const tip = document.getElementById(tipId);
+      if (!tip) return;
+      // Close all other tooltips
+      container.querySelectorAll('.slider-tooltip').forEach(t => {
+        if (t.id !== tipId) t.style.display = 'none';
+      });
+      // Toggle this one
+      tip.style.display = tip.style.display === 'none' ? 'block' : 'none';
+    });
+  });
+  // Close tooltips when clicking elsewhere
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.slider-info-btn')) {
+      container.querySelectorAll('.slider-tooltip').forEach(t => t.style.display = 'none');
+    }
+  }, { once: false });
 
   // ── Run button handler ──
   document.getElementById('rec-run-btn').addEventListener('click', () => {
