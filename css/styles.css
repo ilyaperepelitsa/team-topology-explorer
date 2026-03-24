@@ -460,6 +460,11 @@ body {
 }
 
 /* ── Roles bar: Facts ── */
+#rolesbar-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+}
 .rb-fact {
   display: flex;
   flex-direction: column;
